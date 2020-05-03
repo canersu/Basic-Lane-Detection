@@ -6,51 +6,39 @@
 Overview
 ---
 
-When we drive, we use our eyes to decide where to go.  The lines on the road that show us where the lanes are act as our constant reference for where to steer the vehicle.  Naturally, one of the first things we would like to do in developing a self-driving car is to automatically detect lane lines using an algorithm.
+When we drive, we use our eyes to decide where to go. The lines on the road that show us where the lanes are act as our constant reference for where to steer the vehicle.  Naturally, one of the first things we would like to do in developing a self-driving car is to automatically detect lane lines using an algorithm.
 
 In this project you will detect lane lines in images using Python and OpenCV.  OpenCV means "Open-Source Computer Vision", which is a package that has many useful tools for analyzing images.  
 
-To complete the project, two files will be submitted: a file containing project code and a file containing a brief write up explaining your solution. We have included template files to be used both for the [code](https://github.com/udacity/CarND-LaneLines-P1/blob/master/P1.ipynb) and the [writeup](https://github.com/udacity/CarND-LaneLines-P1/blob/master/writeup_template.md).The code file is called P1.ipynb and the writeup template is writeup_template.md 
+### 1. Pipeline
 
-To meet specifications in the project, take a look at the requirements in the [project rubric](https://review.udacity.com/#!/rubrics/322/view)
+To find lanes from a front facing camera, image processing must be used in a pipeline. My pipeline process starts with converting multichannel image to grayscale. To remove the noise from gray image, Gaussian Filter is applied on grayscale image with kernel size 7. Then canny edge detector used on a filtered image with recommended 1:3 threshold ratio, which is 50-150. After that, the best region of interest(ROI) area was chosen, which vertex coordinates are (200,540),(420,320),(480,320),(920,540). Passing with original image and vertex coordinates into region_of_interest function, it returned masked edges. Masked edges was used to find edges in ROI and draw lines on the image. To find image, params were used as following: rho=1, theta=np.pi/180, threshold=15, min_line_length=60, max_line_gap=30. Edges were highlighted on the original image as a final step.
 
+In order to draw a single line on the left and right lanes, the draw_lines() function was modified by finding the slope first. Left and right lanes have different slopes. If the slope is negative, it indicates that we are handling with right lane, positive slope shows the left lane. Each line have slightly different slope-x1-x2-y1-y2 values, that's why the average of them was taken to find final top and bottom x-y coordinates of a line. If no line has found, default top and bottom coordinates specified.
 
-Creating a Great Writeup
----
-For this project, a great writeup should provide a detailed response to the "Reflection" section of the [project rubric](https://review.udacity.com/#!/rubrics/322/view). There are three parts to the reflection:
+Below images shows the several steps of transformation from the raw original image to final image.
 
-1. Describe the pipeline
-
-2. Identify any shortcomings
-
-3. Suggest possible improvements
-
-We encourage using images in your writeup to demonstrate how your pipeline works.  
-
-All that said, please be concise!  We're not looking for you to write a book here: just a brief description.
-
-You're not required to use markdown for your writeup.  If you use another method please just submit a pdf of your writeup. Here is a link to a [writeup template file](https://github.com/udacity/CarND-LaneLines-P1/blob/master/writeup_template.md). 
+<img src="./test_images_output/original.jpg" width="240" alt="Original Image" />
+ <em>Fig. 1: Original(raw) Image</em> <br>
+<img src="./test_images_output/gray_scale.jpg" width="240" alt="Gray Image" />
+ <em>Fig. 2: Grayscale Image </em> <br>
+<img src="./test_images_output/canny_image.jpg" width="240" alt="Canny Image" />
+ <em>Fig. 3: Canny Edges</em> <br>
+<img src="./test_images_output/masked_image.jpg" width="240" alt="Masked Image" />
+ <em>Fig. 4: Masked Image</em> <br>
+<img src="./test_images_output/final_image.jpg" width="240" alt="Final Image"/>
+ <em>Fig. 5: Final Image</em> <br>
 
 
-The Project
----
+### 2. Shortcomings
 
-## If you have already installed the [CarND Term1 Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit/blob/master/README.md) you should be good to go!   If not, you should install the starter kit to get started on this project. ##
 
-**Step 1:** Set up the [CarND Term1 Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit/blob/master/README.md) if you haven't already.
+One potential shortcoming would be what would happen when camera is located at different position or orientation. Most of the pixel coordinates are hardcoded, when camera is located with different position or orientation, all coordinates would be calculated again and again. This effects the calibration process in a negative manner.
 
-**Step 2:** Open the code in a Jupyter Notebook
+Codes look messy within the jupyter notebook. It looks harder to follow the pipeline and it has a downside of reusability.
 
-You will complete the project code in a Jupyter notebook.  If you are unfamiliar with Jupyter Notebooks, check out [Udacity's free course on Anaconda and Jupyter Notebooks](https://classroom.udacity.com/courses/ud1111) to get started.
+### 3. Improvements
 
-Jupyter is an Ipython notebook where you can run blocks of code and see results interactively.  All the code for this project is contained in a Jupyter notebook. To start Jupyter in your browser, use terminal to navigate to your project directory and then run the following command at the terminal prompt (be sure you've activated your Python 3 carnd-term1 environment as described in the [CarND Term1 Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit/blob/master/README.md) installation instructions!):
+A possible improvement would be changing the programming language. In a mobile systems, C++ would be a better choice due to the closeness to hardware level and less memory needs.
 
-`> jupyter notebook`
-
-A browser window will appear showing the contents of the current directory.  Click on the file called "P1.ipynb".  Another browser window will appear displaying the notebook.  Follow the instructions in the notebook to complete the project.  
-
-**Step 3:** Complete the project and submit both the Ipython notebook and the project writeup
-
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
-
+A class structure can be added to pack things up.
